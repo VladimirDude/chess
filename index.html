@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0e0d0b" />
+    <title>Chess</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Outfit:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./css/styles.css?v=14" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='52' font-size='52'%3E♞%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <section id="menu" class="screen menu-screen">
+        <div class="menu-inner">
+          <header class="brand">
+            <span class="mark" aria-hidden="true">
+              <img src="./js/pieces/ndt.svg" alt="" />
+            </span>
+            <p class="eyebrow">No accounts · No limits</p>
+            <h1>Chess</h1>
+            <p class="lede">
+              Full rules on a proper board. Play here, or send a room link
+              and sit across from someone anywhere.
+            </p>
+          </header>
+
+          <div class="menu-card">
+            <label class="field">
+              <span>Your name</span>
+              <input
+                id="player-name"
+                type="text"
+                maxlength="20"
+                spellcheck="false"
+                placeholder="What should we call you?"
+                autocomplete="nickname"
+              />
+            </label>
+
+            <label class="field">
+              <span>Time control</span>
+              <select id="time-control">
+                <option value="0">Unlimited</option>
+                <option value="1">1 minute</option>
+                <option value="3">3 minutes</option>
+                <option value="5">5 minutes</option>
+                <option value="10" selected>10 minutes</option>
+                <option value="15">15 minutes</option>
+                <option value="30">30 minutes</option>
+              </select>
+            </label>
+
+            <div class="field">
+              <span>Board</span>
+              <div class="theme-row" id="board-theme" role="group" aria-label="Board theme">
+                <button type="button" class="theme-card selected" data-theme="classic" aria-label="Classic">
+                  <span class="theme-board" aria-hidden="true"></span>
+                  <span class="theme-name">Classic</span>
+                </button>
+                <button type="button" class="theme-card" data-theme="forest" aria-label="Forest">
+                  <span class="theme-board" aria-hidden="true"></span>
+                  <span class="theme-name">Forest</span>
+                </button>
+                <button type="button" class="theme-card" data-theme="ocean" aria-label="Ocean">
+                  <span class="theme-board" aria-hidden="true"></span>
+                  <span class="theme-name">Ocean</span>
+                </button>
+                <button type="button" class="theme-card" data-theme="slate" aria-label="Slate">
+                  <span class="theme-board" aria-hidden="true"></span>
+                  <span class="theme-name">Slate</span>
+                </button>
+                <button type="button" class="theme-card" data-theme="sand" aria-label="Sand">
+                  <span class="theme-board" aria-hidden="true"></span>
+                  <span class="theme-name">Sand</span>
+                </button>
+              </div>
+            </div>
+
+            <button id="play-local" class="btn primary" type="button">Play on this device</button>
+            <button id="create-room" class="btn" type="button">Create room</button>
+
+            <div class="or"><span>or join</span></div>
+
+            <div class="join-row">
+              <input id="join-code" type="text" spellcheck="false" placeholder="Room code" autocomplete="off" />
+              <button id="join-room" class="btn" type="button">Join</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="game" class="screen game-screen hidden">
+        <header class="topbar">
+          <button id="leave" class="btn ghost" type="button">Leave</button>
+          <div id="connection" class="connection hidden"></div>
+          <button id="copy-link" class="btn primary hidden" type="button">Copy invite</button>
+        </header>
+
+        <div class="table">
+          <div class="stage">
+            <div class="player-bar">
+              <div class="identity">
+                <span class="avatar black" id="top-avatar" aria-hidden="true"></span>
+                <div>
+                  <div class="who" id="top-who">Black</div>
+                  <div class="captured" id="top-captured"></div>
+                </div>
+              </div>
+              <div class="clock" id="top-clock">10:00</div>
+            </div>
+
+            <div class="board-frame" id="board-frame">
+              <div id="eval-track" class="eval-track hidden" title="Evaluation" aria-hidden="true">
+                <div id="eval-fill" class="eval-fill"></div>
+              </div>
+              <div id="ranks" class="ranks" aria-hidden="true"></div>
+              <div id="board" class="board" role="grid" aria-label="Chessboard"></div>
+              <div id="files" class="files" aria-hidden="true"></div>
+              <div id="promo" class="promo hidden" role="dialog" aria-label="Promote pawn"></div>
+              <div id="wait-card" class="wait-card hidden">
+                <p id="wait-text">Waiting for opponent…</p>
+                <button id="wait-copy" class="btn primary" type="button">Copy invite</button>
+              </div>
+            </div>
+
+            <div class="player-bar">
+              <div class="identity">
+                <span class="avatar white" id="bottom-avatar" aria-hidden="true"></span>
+                <div>
+                  <div class="who" id="bottom-who">White</div>
+                  <div class="captured" id="bottom-captured"></div>
+                </div>
+              </div>
+              <div class="clock" id="bottom-clock">10:00</div>
+            </div>
+          </div>
+
+          <aside class="moves-panel">
+            <div id="status" class="status">White to move</div>
+            <ol id="moves" class="moves"></ol>
+            <div class="actions">
+              <button id="flip" class="btn" type="button">Flip</button>
+              <button id="offer-draw" class="btn" type="button">Draw</button>
+              <button id="resign" class="btn danger" type="button">Resign</button>
+              <button id="rematch" class="btn primary" type="button">Rematch</button>
+            </div>
+            <div id="offer-banner" class="offer hidden"></div>
+            <div id="analysis" class="analysis hidden">
+              <div id="analysis-status" class="analysis-status"></div>
+              <p id="analysis-line" class="analysis-line"></p>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </div>
+
+    <div id="toast" class="toast hidden" role="status"></div>
+
+    <div id="end-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="end-title">
+      <div class="modal-card end-card">
+        <p class="modal-kicker" id="end-kicker">Game over</p>
+        <h2 id="end-title">Checkmate</h2>
+        <p class="modal-detail" id="end-detail"></p>
+        <div class="modal-actions end-actions">
+          <button id="end-analyze" class="btn" type="button">Analyze game</button>
+          <button id="end-again" class="btn primary" type="button">Rematch</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="room-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="room-title">
+      <div class="modal-card">
+        <p class="modal-kicker">Online match</p>
+        <h2 id="room-title">Create room</h2>
+        <div class="field-grid">
+          <label class="field">
+            <span>Minutes</span>
+            <select id="room-time">
+              <option value="0">Unlimited</option>
+              <option value="1">1</option>
+              <option value="3">3</option>
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="15">15</option>
+              <option value="30">30</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Increment</span>
+            <select id="room-inc">
+              <option value="0" selected>0 sec</option>
+              <option value="1">1 sec</option>
+              <option value="2">2 sec</option>
+              <option value="3">3 sec</option>
+              <option value="5">5 sec</option>
+            </select>
+          </label>
+        </div>
+        <div class="field">
+          <span>Your side</span>
+          <div class="choice-row" id="room-side">
+            <button class="choice" type="button" data-side="w">White</button>
+            <button class="choice selected" type="button" data-side="random">Random</button>
+            <button class="choice" type="button" data-side="b">Black</button>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button id="room-cancel" class="btn" type="button">Cancel</button>
+          <button id="room-go" class="btn primary" type="button">Create invite</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./js/chess-app.js?v=13"></script>
+  </body>
+</html>
